@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1b5e20">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="متابعة البناء">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%231b5e20'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' fill='white'%3E🏗%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<title>متابعة البناء</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g1:#1b5e20;--g2:#2e7d32;--g3:#388e3c;--gl:rgba(27,94,32,.08);
+  --b2:#1565c0;--bl:rgba(21,101,192,.07);
+  --r1:#c62828;--r2:#d32f2f;--rl:rgba(198,40,40,.1);
+  --txt:#111;--txt2:#666;--bdr:#e0e0e0;--bg:#f5f5f5;--card:#fff;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:calc(70px + var(--safe-bot))}
+header{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:calc(12px + var(--safe-top)) 16px 12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.htitle{font-size:1.1rem;font-weight:700}.sub{font-size:.72rem;opacity:.8;margin-top:2px}
+.hdr-btn{background:rgba(255,255,255,.2);border:none;border-radius:8px;color:#fff;padding:6px 10px;font-size:.78rem;cursor:pointer;white-space:nowrap}
+.pg{display:none;padding:14px 12px;animation:fi .2s ease}
+.pg.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--bdr);display:flex;padding-bottom:var(--safe-bot);z-index:100}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;border:none;background:none;cursor:pointer;font-size:.65rem;color:var(--txt2);gap:3px;transition:.15s}
+.nb.on{color:var(--g2)}.nb .ico{font-size:1.3rem}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:12px}
+.st{font-size:.78rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+.lbl{font-size:.72rem;color:var(--txt2);margin-bottom:4px}
+.val{font-size:1.3rem;font-weight:700}.val.g{color:var(--g2)}.val.b{color:var(--b2)}.val.r{color:var(--r2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fc{width:100%;border:1.5px solid var(--bdr);border-radius:10px;padding:11px 12px;font-size:.9rem;font-family:inherit;background:#fff;color:var(--txt);outline:none;direction:rtl}
+.fc:focus{border-color:var(--g2)}
+.btn{display:flex;align-items:center;gap:6px;border:none;border-radius:10px;padding:10px 16px;font-size:.88rem;font-family:inherit;cursor:pointer;font-weight:600;transition:.15s}
+.btn-p{background:var(--g2);color:#fff}.btn-p:active{background:var(--g1)}
+.btn-g{background:#f1f8e9;color:var(--g1);border:1px solid #c8e6c9}
+.btn-r{background:var(--rl);color:var(--r1)}
+.btn-sm{padding:6px 10px;font-size:.78rem;border-radius:8px}
+.pbar{height:7px;background:#e8f5e9;border-radius:4px;overflow:hidden;margin:8px 0}
+.pfill{height:100%;background:linear-gradient(90deg,var(--g3),var(--g2));border-radius:4px;transition:.4s}
+.pfill.over{background:linear-gradient(90deg,var(--r2),var(--r1))}
+.cc{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:10px}
+.cc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.cc-name{font-weight:700;font-size:.95rem}.cc-pct{font-size:.8rem;color:var(--txt2)}
+.cc-amounts{display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--txt2)}
+.tx{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.tx:last-child{border-bottom:none}
+.tx-ic{width:36px;height:36px;border-radius:10px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.tx-ic.b{background:var(--bl)}
+.tx-body{flex:1;min-width:0}.tx-top{display:flex;justify-content:space-between;align-items:flex-start}
+.tx-cat{font-weight:600;font-size:.88rem}.tx-amt{font-weight:700;font-size:.9rem;color:var(--g2);white-space:nowrap}
+.tx-sub{font-size:.75rem;color:var(--txt2);margin-top:2px}
+.fac{display:flex;gap:10px;margin-top:16px}
+.fac .btn{flex:1;justify-content:center}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-ov.on{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + var(--safe-bot));width:100%;max-height:92vh;overflow-y:auto;animation:su .25s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mtitle{font-size:1.1rem;font-weight:700}
+.mclose{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--txt2);line-height:1}
+.flabel{font-size:.8rem;font-weight:600;color:var(--txt2);margin-bottom:5px;display:block}
+.frow{margin-bottom:14px}
+.toast{position:fixed;bottom:calc(80px + var(--safe-bot));left:50%;transform:translateX(-50%) translateY(20px);background:#323232;color:#fff;padding:10px 20px;border-radius:20px;font-size:.85rem;opacity:0;transition:.3s;z-index:300;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.empty{text-align:center;padding:40px 20px;color:var(--txt2)}
+.empty .ico{font-size:2.5rem;margin-bottom:8px}
+select.fc{appearance:none;-webkit-appearance:none}
+
+/* Setup Wizard */
+.setup-ov{position:fixed;inset:0;background:linear-gradient(135deg,#1b5e20,#2e7d32);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-card{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto}
+.setup-title{font-size:1.2rem;font-weight:700;color:var(--g1);margin-bottom:6px}
+.setup-sub{font-size:.82rem;color:var(--txt2);margin-bottom:20px;line-height:1.5}
+.setup-steps{display:flex;gap:6px;margin-bottom:20px}
+.setup-step{flex:1;height:4px;border-radius:2px;background:#e0e0e0}
+.setup-step.done{background:var(--g2)}
+.chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{display:flex;align-items:center;gap:6px;background:#f1f8e9;border:1.5px solid #c8e6c9;border-radius:20px;padding:5px 10px;font-size:.82rem;color:var(--g1)}
+.chip button{background:none;border:none;cursor:pointer;color:var(--r1);font-size:.9rem;line-height:1;padding:0}
+.cat-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<!-- Setup Wizard -->
+<div id="setup-ov" class="setup-ov" style="display:none">
+  <div class="setup-card" id="setup-card"></div>
+</div>
+
+<header>
+  <div>
+    <div class="htitle">🏗 متابعة البناء</div>
+    <div class="sub" id="hdr-sub">تتبع مصروفات بناء منزلك</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="hdr-btn" onclick="undoLast()" title="تراجع">↩️</button>
+    <button class="hdr-btn" onclick="openExportModal()">📤 تصدير</button>
+    <button class="hdr-btn" onclick="openDataModal()">💾 نقل</button>
+  </div>
+</header>
+
+<div id="pg-summary" class="pg on"></div>
+<div id="pg-construction" class="pg"></div>
+<div id="pg-monthly" class="pg"></div>
+<div id="pg-search" class="pg"></div>
+<div id="pg-settings" class="pg"></div>
+
+<nav>
+  <button class="nb on" id="nb-summary" onclick="go('summary')"><span class="ico">📊</span>الملخص</button>
+  <button class="nb" id="nb-construction" onclick="go('construction')"><span class="ico">🔨</span>البناء</button>
+  <button class="nb" id="nb-monthly" onclick="go('monthly')"><span class="ico">📅</span>الشهرية</button>
+  <button class="nb" id="nb-search" onclick="go('search')"><span class="ico">🔍</span>البحث</button>
+  <button class="nb" id="nb-settings" onclick="go('settings')"><span class="ico">⚙️</span>الإعدادات</button>
+</nav>
+
+<div class="modal-ov" id="modal-ov" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════
+let S = {
+  payments: [],
+  construction: [],
+  monthly: [],
+  contracts: {},
+  config: {
+    projectName: 'مشروع البناء',
+    constructionCats: [],  // [{name, party}]
+    monthlyCats: [],       // [{name, party, amount}]
+    contractCats: [],      // [name] subset of constructionCats
+  }
+};
+
+const undoStack = [];
+
+function loadS() {
+  try {
+    const raw = localStorage.getItem('btrk');
+    if (raw) S = JSON.parse(raw);
+    // migrations
+    if (!S.config) S.config = { projectName:'مشروع البناء', constructionCats:[], monthlyCats:[], contractCats:[] };
+    if (!S.config.constructionCats) S.config.constructionCats = [];
+    if (!S.config.monthlyCats) S.config.monthlyCats = [];
+    if (!S.config.contractCats) S.config.contractCats = [];
+  } catch(e) {}
+}
+
+function saveS(undoable=true) {
+  if (undoable) {
+    const prev = localStorage.getItem('btrk');
+    if (prev) { undoStack.push(prev); if (undoStack.length > 10) undoStack.shift(); }
+  }
+  try { localStorage.setItem('btrk', JSON.stringify(S)); } catch(e) { toast('تحذير: مساحة التخزين ممتلئة'); }
+}
+
+function undoLast() {
+  if (!undoStack.length) { toast('لا يوجد شيء للتراجع عنه'); return; }
+  const prev = undoStack.pop();
+  S = JSON.parse(prev);
+  localStorage.setItem('btrk', prev);
+  render();
+  toast('تم التراجع ✓', false);
+}
+
+// ═══════════════════════════════════════════════
+//  Config Helpers
+// ═══════════════════════════════════════════════
+function CONSTRUCTION_CATS() { return S.config.constructionCats.map(c=>c.name); }
+function MONTHLY_CATS() { return S.config.monthlyCats.map(c=>c.name); }
+function CONTRACT_CATS() { return S.config.contractCats; }
+
+function catParty(cat) {
+  const cc = S.config.constructionCats.find(c=>c.name===cat);
+  if (cc) return cc.party||'';
+  const mc = S.config.monthlyCats.find(c=>c.name===cat);
+  if (mc) return mc.party||'';
+  return '';
+}
+function catDefaultAmount(cat) {
+  const mc = S.config.monthlyCats.find(c=>c.name===cat);
+  return mc ? (+mc.amount||0) : 0;
+}
+
+// ═══════════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════════
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function kd(n) { return (+n||0).toLocaleString('ar-KW',{minimumFractionDigits:3,maximumFractionDigits:3})+' د.ك'; }
+function fmtD(d) { if(!d) return '—'; try { return new Date(d).toLocaleDateString('ar-KW',{year:'numeric',month:'short',day:'numeric'}); } catch(e){return d;} }
+function parseNum(val) { return parseFloat(String(val).replace(/[,،٠١٢٣٤٥٦٧٨٩]/g, d=>'٠١٢٣٤٥٦٧٨٩'.includes(d)?'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]:d))||0; }
+function toWestern(s) { return String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+function onNumInput(el) { const pos=el.selectionStart; el.value=toWestern(el.value); try{el.setSelectionRange(pos,pos);}catch(e){} }
+
+let toastTimer;
+function toast(msg, err=true) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast on' + (err?' r':'');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.className='toast', 2800);
+}
+
+function showModal(html) {
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-ov').className = 'modal-ov on';
+}
+function closeModal() { document.getElementById('modal-ov').className = 'modal-ov'; }
+
+// ═══════════════════════════════════════════════
+//  Contracts helpers
+// ═══════════════════════════════════════════════
+function contractAmount(cat) { const v=S.contracts[cat]; if(!v)return 0; if(typeof v==='object')return +v.amount||0; return +v||0; }
+function contractInstallments(cat) { const v=S.contracts[cat]; if(!v||typeof v!=='object')return []; return v.installments||[]; }
+function contractPaid(cat) { return S.construction.filter(e=>e.cat===cat).reduce((s,e)=>s+(+e.paid||0),0); }
+function allContractCats() {
+  const fromConfig = CONTRACT_CATS();
+  const fromContracts = Object.keys(S.contracts);
+  return [...new Set([...fromConfig,...fromContracts])].filter(c=>contractAmount(c)>0||fromConfig.includes(c));
+}
+function totalContracts() { return allContractCats().reduce((s,c)=>s+contractAmount(c),0); }
+function totalContractsPaid() { return allContractCats().reduce((s,c)=>s+contractPaid(c),0); }
+
+// ═══════════════════════════════════════════════
+//  Payments helpers
+// ═══════════════════════════════════════════════
+function paymentUsed(pid) {
+  const txs = [...S.construction.filter(e=>e.pid===pid), ...S.monthly.filter(e=>e.src==='payment'&&e.pid===pid)];
+  return txs.reduce((s,e)=>s+(+e.paid||+e.amount||0),0);
+}
+function paymentTotal(pid) { const p=S.payments.find(p=>p.id===pid); return p?(+p.amount||0)+(+p.carried||0):0; }
+function paymentLeft(pid) { return paymentTotal(pid)-paymentUsed(pid); }
+
+function carryOver(fromId, toId, amount) {
+  const toPay = S.payments.find(p=>p.id===toId);
+  if (!toPay) { toast('الدفعة غير موجودة'); return; }
+  toPay.carried = (+toPay.carried||0)+amount;
+  saveS(); render(); toast('تم الترحيل ✓', false);
+}
+
+// ═══════════════════════════════════════════════
+//  Navigation
+// ═══════════════════════════════════════════════
+let cur = 'summary';
+let searchQ = '';
+
+function go(page) {
+  document.querySelectorAll('.pg').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(el=>el.classList.remove('on'));
+  document.getElementById('pg-'+page).classList.add('on');
+  document.getElementById('nb-'+page).classList.add('on');
+  cur = page;
+  render();
+}
+
+function render() {
+  if (cur==='summary') renderSummary();
+  else if (cur==='construction') renderConstruction();
+  else if (cur==='monthly') renderMonthly();
+  else if (cur==='search') renderSearch();
+  else if (cur==='settings') renderSettings();
+}
+
+// ═══════════════════════════════════════════════
+//  Summary
+// ═══════════════════════════════════════════════
+function renderSummary() {
+  const el = document.getElementById('pg-summary');
+  const totalPay = S.payments.reduce((s,p)=>s+(+p.amount||0),0);
+  const totalConst = S.construction.reduce((s,e)=>s+(+e.paid||0),0);
+  const totalMon = S.monthly.reduce((s,e)=>s+(+e.amount||0),0);
+  const totalSpent = totalConst + totalMon;
+  const totalLeft = totalPay - totalSpent;
+  const lastPay = S.payments.length ? S.payments[S.payments.length-1] : null;
+  const lastLeft = lastPay ? paymentLeft(lastPay.id) : 0;
+  const contractsTotal = totalContracts();
+  const contractsPaid = totalContractsPaid();
+
+  // recent transactions
+  const recent = [
+    ...S.construction.map(e=>({...e,_t:'c'})),
+    ...S.monthly.map(e=>({...e,_t:'m'}))
+  ].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,8);
+
+  el.innerHTML = `
+  <div class="grid2">
+    <div class="card"><div class="lbl">إجمالي الدفعات</div><div class="val g">${kd(totalPay)}</div></div>
+    <div class="card"><div class="lbl">إجمالي المصروف</div><div class="val r">${kd(totalSpent)}</div></div>
+    <div class="card"><div class="lbl">الرصيد المتبقي</div><div class="val ${totalLeft>=0?'g':'r'}">${kd(totalLeft)}</div></div>
+    <div class="card" style="cursor:pointer" onclick="go('summary');document.querySelectorAll('.pg').forEach(e=>e.classList.remove('on'));document.getElementById('pg-summary').classList.add('on')">
+      <div class="lbl">متبقي آخر دفعة</div>
+      <div class="val ${lastLeft>=0?'g':'r'}">${lastPay?kd(lastLeft):'—'}</div>
+    </div>
+  </div>
+
+  ${contractsTotal>0?`
+  <div class="st">العقود</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:.82rem;color:var(--txt2)">المدفوع من العقود</span>
+      <span style="font-weight:700;font-size:.88rem">${kd(contractsPaid)} / ${kd(contractsTotal)}</span>
+    </div>
+    <div class="pbar"><div class="pfill${contractsPaid>contractsTotal?' over':''}" style="width:${contractsTotal>0?Math.min(100,contractsPaid/contractsTotal*100):0}%"></div></div>
+  </div>`:''}
+
+  <div class="st">الدفعات</div>
+  ${S.payments.length===0?`<div class="card"><div class="empty"><div class="ico">💰</div><p>لا توجد دفعات بعد</p></div></div>`
+  :S.payments.map((p,i)=>{
+    const used=paymentUsed(p.id), total=paymentTotal(p.id), left=paymentLeft(p.id);
+    const pct=total>0?Math.min(100,used/total*100):0;
+    return `<div class="card">
+      <div class="cc-top">
+        <div><div style="font-weight:700">دفعة ${i+1}${p.name?' — '+p.name:''}</div>
+        <div style="font-size:.75rem;color:var(--txt2)">${fmtD(p.date)}</div></div>
+        <div style="display:flex;gap:6px">
+          <button onclick="openPayModal('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem">✏️</button>
+          <button onclick="delPayment('${p.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem">🗑️</button>
+        </div>
+      </div>
+      <div class="pbar"><div class="pfill${pct>=100?' over':''}" style="width:${pct}%"></div></div>
+      <div class="cc-amounts">
+        <span>المبلغ: <strong>${kd(p.amount)}</strong></span>
+        ${p.carried?`<span>مرحّل: <strong>+${kd(p.carried)}</strong></span>`:''}
+        <span>المصروف: <strong>${kd(used)}</strong></span>
+        <span>المتبقي: <strong style="color:${left<0?'var(--r2)':'inherit'}">${kd(left)}</strong></span>
+      </div>
+      ${left>0&&i<S.payments.length-1?`<button class="btn btn-g btn-sm" style="margin-top:8px" onclick="openCarryModal('${p.id}')">↩️ ترحيل للدفعة التالية</button>`:''}
+    </div>`;
+  }).join('')}
+  <button class="btn btn-p" style="width:100%;justify-content:center;margin-bottom:12px" onclick="openPayModal()">➕ إضافة دفعة</button>
+
+  <div class="st">آخر العمليات</div>
+  <div class="card">
+    ${recent.length===0?`<div class="empty"><div class="ico">📋</div><p>لا توجد عمليات بعد</p></div>`
+    :recent.map(tx=>`<div class="tx">
+      <div class="tx-ic${tx._t==='m'?' b':''}">${tx.cat?tx.cat.slice(0,2):'؟'}</div>
+      <div class="tx-body">
+        <div class="tx-top">
+          <div class="tx-cat">${tx.cat||'—'}</div>
+          <div class="tx-amt">${kd(tx._t==='c'?tx.paid:tx.amount)}</div>
+        </div>
+        <div class="tx-sub">${tx.party||''} ${tx.date?'· '+fmtD(tx.date):''}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  Payment Modal
+// ═══════════════════════════════════════════════
+function openPayModal(id='') {
+  const p = id ? S.payments.find(x=>x.id===id) : null;
+  showModal(`
+  <div class="mhdr"><div class="mtitle">${p?'تعديل دفعة':'➕ دفعة جديدة'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="frow"><label class="flabel">اسم الدفعة (اختياري)</label><input class="fc" id="f-pn" placeholder="مثال: الدفعة الأولى" value="${p?p.name||'':''}"></div>
+  <div class="frow"><label class="flabel">المبلغ</label><input class="fc" id="f-pa" type="text" inputmode="decimal" placeholder="0" value="${p?p.amount||'':''}" oninput="onNumInput(this)"></div>
+  <div class="frow"><label class="flabel">التاريخ</label><input class="fc" id="f-pd" type="date" value="${p?p.date||'':''}"></div>
+  <div class="frow"><label class="flabel">ملاحظات</label><input class="fc" id="f-pnotes" placeholder="اختياري" value="${p?p.notes||'':''}"></div>
+  <div class="fac">
+    <button class="btn btn-g" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-p" onclick="savePayment('${id}')">💾 حفظ</button>
+  </div>`);
+}
+
+function savePayment(id) {
+  const name = document.getElementById('f-pn').value.trim();
+  const amount = parseNum(document.getElementById('f-pa').value);
+  const date = document.getElementById('f-pd').value;
+  const notes = document.getElementById('f-pnotes').value.trim();
+  if (!amount) { toast('يرجى إدخال المبلغ'); return; }
+  if (id) {
+    const p = S.payments.find(x=>x.id===id);
+    if (p) { p.name=name; p.amount=amount; p.date=date; p.notes=notes; }
+  } else {
+    S.payments.push({id:uid(),name,amount,date,notes,carried:0});
+  }
+  saveS(); closeModal(); render(); toast('تم الحفظ ✓', false);
+}
+
+function delPayment(id) {
+  if (!confirm('حذف هذه الدفعة؟')) return;
+  S.payments = S.payments.filter(p=>p.id!==id);
+  saveS(); render(); toast('تم الحذف');
+}
+
+function openCarryModal(fromId) {
+  const fromIdx = S.payments.findIndex(p=>p.id===fromId);
+  const toIdx = fromIdx + 1;
+  if (toIdx >= S.payments.length) { toast('لا توجد دفعة تالية'); return; }
+  const toPay = S.payments[toIdx];
+  const left = paymentLeft(fromId);
+  showModal(`
+  <div class="mhdr"><div class="mtitle">↩️ ترحيل رصيد</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <p style="font-size:.85rem;color:var(--txt2);margin-bottom:16px">ترحيل المتبقي إلى دفعة ${toIdx+1}${toPay.name?' — '+toPay.name:''}</p>
+  <div class="frow"><label class="flabel">المبلغ المراد ترحيله</label>
+  <input class="fc" id="f-carry" type="text" inputmode="decimal" value="${left}" oninput="onNumInput(this)"></div>
+  <div class="fac">
+    <button class="btn btn-g" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-p" onclick="carryOver('${fromId}','${toPay.id}',parseNum(document.getElementById('f-carry').value));closeModal()">ترحيل ✓</button>
+  </div>`);
+}
+
+// ═══════════════════════════════════════════════
+//  Construction
+// ═══════════════════════════════════════════════
+function renderConstruction() {
+  const el = document.getElementById('pg-construction');
+  const byPay = {};
+  S.payments.forEach(p=>{ byPay[p.id]=[]; });
+  byPay['__none'] = [];
+  S.construction.forEach(e=>{ const key=e.pid&&byPay[e.pid]?e.pid:'__none'; byPay[key].push(e); });
+
+  const totalAll = S.construction.reduce((s,e)=>s+(+e.paid||0),0);
+
+  // contracts section
+  const cCats = allContractCats();
+
+  el.innerHTML = `
+  ${cCats.length>0?`
+  <div class="st">ملخص العقود</div>
+  ${cCats.map(cat=>{
+    const total=contractAmount(cat),paid=contractPaid(cat),left=total-paid;
+    const p=total>0?Math.min(100,paid/total*100):0;
+    const installs=contractInstallments(cat);
+    let paidInstalls=0;
+    if(installs.length>0){let cum=0;for(const ins of installs){cum+=(+ins.amount||0);if(paid>=cum)paidInstalls++;else break;}}
+    const catKey=cat.replace(/\s/g,'_').replace(/[()]/g,'');
+    return `<div class="cc">
+      <div class="cc-top">
+        <div class="cc-name">${cat}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="cc-pct">${Math.round(p)}٪</div>
+          <button onclick="openAddContractModal('${cat}')" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px">✏️</button>
+          <button onclick="delCustomContract('${cat}')" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:2px">🗑️</button>
+        </div>
+      </div>
+      ${total>0?`<div class="pbar"><div class="pfill${p>=100?' over':''}" style="width:${p}%"></div></div>
+      <div class="cc-amounts">
+        <span>مدفوع: <strong>${kd(paid)}</strong></span>
+        <span>متبقي: <strong style="color:${left<0?'var(--r2)':'inherit'}">${kd(left)}</strong></span>
+        <span>الإجمالي: <strong>${kd(total)}</strong></span>
+      </div>
+      ${installs.length>0?`<div style="margin-top:8px;border-top:1px solid var(--bdr);padding-top:6px">
+        <button onclick="toggleInstalls('${catKey}')" style="background:none;border:none;cursor:pointer;width:100%;display:flex;justify-content:space-between;align-items:center;padding:2px 0">
+          <span style="font-size:.78rem;color:var(--txt2);font-weight:600">الدفعات: <span style="color:${paidInstalls===installs.length?'var(--g2)':'var(--txt)'}">${paidInstalls}/${installs.length}</span> مدفوعة</span>
+          <span id="arr-${catKey}" style="font-size:.75rem;color:var(--txt2);transition:.2s">▼</span>
+        </button>
+        <div id="ins-list-${catKey}" style="display:none;margin-top:6px">
+          ${installs.map((ins,i)=>`<div style="display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid var(--bdr)">
+            <span style="color:var(--txt2)">دفعة ${ins.num||i+1}${ins.label?' — '+ins.label:''}</span>
+            <span style="font-weight:700">${ins.amount?kd(ins.amount):'—'}</span>
+          </div>`).join('')}
+        </div>
+      </div>`:''}
+      `:`<div style="font-size:.78rem;color:var(--txt2);display:flex;align-items:center;gap:8px;margin-top:2px">لم تُحدَّد قيمة العقد
+        <button class="btn btn-g btn-sm" onclick="openAddContractModal('${cat}')">تحديد</button>
+      </div>`}
+    </div>`;
+  }).join('')}
+  <button class="btn btn-g btn-sm" style="margin-bottom:12px" onclick="openAddContractModal()">➕ إضافة عقد</button>
+  `:`<button class="btn btn-g btn-sm" style="margin:8px 0 12px" onclick="openAddContractModal()">➕ إضافة عقد</button>`}
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="st" style="margin:0">جدول البناء</div>
+    <div style="font-size:.8rem;color:var(--txt2)">الإجمالي: <strong>${kd(totalAll)}</strong></div>
+  </div>
+
+  ${S.payments.length===0?`<button class="btn btn-p" style="width:100%;justify-content:center;margin-bottom:12px" onclick="go('summary');openPayModal()">➕ أضف دفعة أولاً</button>`:''}
+
+  ${S.payments.map((pay,pi)=>{
+    const exps = (byPay[pay.id]||[]).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const total = exps.reduce((s,e)=>s+(+e.paid||0),0);
+    if (!exps.length) return '';
+    return `<div class="st">دفعة ${pi+1}${pay.name?' — '+pay.name:''} <span style="font-weight:400;color:var(--txt2)">(${kd(total)})</span></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead><tr style="background:linear-gradient(135deg,var(--g1),var(--b2));color:#fff">
+          <th style="padding:8px 10px;text-align:right">البند</th>
+          <th style="padding:8px 10px;text-align:right">جهة الصرف</th>
+          <th style="padding:8px 10px;text-align:right">التاريخ</th>
+          <th style="padding:8px 10px;text-align:left">المدفوع</th>
+          <th style="padding:8px 6px"></th>
+        </tr></thead>
+        <tbody>
+        ${exps.map((e,i)=>`<tr style="border-bottom:1px solid var(--bdr);background:${i%2===0?'#fff':'#fafafa'}">
+          <td style="padding:8px 10px"><div style="font-weight:600">${e.cat||'—'}</div>${e.total&&e.total!=e.paid?`<div style="font-size:.72rem;color:var(--txt2)">من ${kd(e.total)}</div>`:''}</td>
+          <td style="padding:8px 10px;color:var(--txt2)">${e.party||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2);white-space:nowrap;font-size:.75rem">${fmtD(e.date)}</td>
+          <td style="padding:8px 10px;text-align:left;font-weight:700;color:var(--g2);white-space:nowrap">${kd(e.paid)}</td>
+          <td style="padding:8px 6px;text-align:center">
+            <button onclick="openConstructionModal('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">✏️</button>
+            <button onclick="delConstruction('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">🗑️</button>
+          </td>
+        </tr>${e.notes?`<tr style="background:${i%2===0?'#fff':'#fafafa'};border-bottom:1px solid var(--bdr)"><td colspan="5" style="padding:2px 10px 7px;color:var(--txt2);font-size:.74rem">📝 ${e.notes}</td></tr>`:''}`).join('')}
+        <tr style="background:#f1f8e9"><td colspan="3" style="padding:8px 10px;font-weight:700">الإجمالي</td>
+          <td style="padding:8px 10px;font-weight:700;color:var(--g2);text-align:left">${kd(total)}</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  }).join('')}
+
+  ${byPay['__none'].length>0?`
+  <div class="st">بدون دفعة</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+      <thead><tr style="background:linear-gradient(135deg,var(--g1),var(--b2));color:#fff">
+        <th style="padding:8px 10px;text-align:right">البند</th>
+        <th style="padding:8px 10px;text-align:right">جهة الصرف</th>
+        <th style="padding:8px 10px;text-align:right">التاريخ</th>
+        <th style="padding:8px 10px;text-align:left">المدفوع</th>
+        <th style="padding:8px 6px"></th>
+      </tr></thead>
+      <tbody>
+      ${byPay['__none'].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0)).map((e,i)=>`
+        <tr style="border-bottom:1px solid var(--bdr);background:${i%2===0?'#fff':'#fafafa'}">
+          <td style="padding:8px 10px;font-weight:600">${e.cat||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2)">${e.party||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2);font-size:.75rem">${fmtD(e.date)}</td>
+          <td style="padding:8px 10px;text-align:left;font-weight:700;color:var(--g2)">${kd(e.paid)}</td>
+          <td style="padding:8px 6px;text-align:center">
+            <button onclick="openConstructionModal('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">✏️</button>
+            <button onclick="delConstruction('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">🗑️</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`:''}
+
+  <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="openConstructionModal()">➕ إضافة مصروف بناء</button>`;
+}
+
+// ═══════════════════════════════════════════════
+//  Construction Modal
+// ═══════════════════════════════════════════════
+function openConstructionModal(id='') {
+  const e = id ? S.construction.find(x=>x.id===id) : null;
+  const cats = CONSTRUCTION_CATS();
+  const latestPay = S.payments.length ? S.payments[S.payments.length-1] : null;
+  const catOpts = cats.map(c=>`<option value="${c}" ${e&&e.cat===c?'selected':''}>${c}</option>`).join('');
+
+  showModal(`
+  <div class="mhdr"><div class="mtitle">${e?'تعديل مصروف':'➕ مصروف بناء'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="frow"><label class="flabel">البند</label>
+    <input class="fc" id="f-ec-inp" list="ec-list" placeholder="اختر أو اكتب البند" value="${e?e.cat||'':''}" oninput="autofillConst(this.value)">
+    <datalist id="ec-list">${catOpts}</datalist>
+  </div>
+  <div class="frow"><label class="flabel">جهة الصرف</label><input class="fc" id="f-ep" placeholder="جهة الصرف" value="${e?e.party||'':''}"></div>
+  <div class="frow"><label class="flabel">المبلغ المدفوع</label><input class="fc" id="f-epd" type="text" inputmode="decimal" placeholder="0" value="${e?e.paid||'':''}" oninput="onNumInput(this)"></div>
+  <div class="frow"><label class="flabel">إجمالي العقد (اختياري)</label><input class="fc" id="f-et" type="text" inputmode="decimal" placeholder="0" value="${e?e.total||'':''}" oninput="onNumInput(this)"></div>
+  <div class="frow"><label class="flabel">الدفعة</label>
+    <select class="fc" id="f-epay">
+      <option value="">— بدون دفعة —</option>
+      ${S.payments.map((p,i)=>`<option value="${p.id}" ${e?e.pid===p.id?'selected':'':latestPay&&p.id===latestPay.id?'selected':''}>${'دفعة '+(i+1)+(p.name?' — '+p.name:'')}</option>`).join('')}
+    </select>
+  </div>
+  <div class="frow"><label class="flabel">التاريخ</label><input class="fc" id="f-ed" type="date" value="${e?e.date||'':''}"></div>
+  <div class="frow"><label class="flabel">ملاحظات</label><input class="fc" id="f-en" placeholder="اختياري" value="${e?e.notes||'':''}"></div>
+  <div class="fac">
+    <button class="btn btn-g" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-p" onclick="saveConstruction('${id}')">💾 حفظ</button>
+  </div>`);
+}
+
+function autofillConst(cat) {
+  const party = catParty(cat);
+  if (party) { const f=document.getElementById('f-ep'); if(f&&!f.value) f.value=party; }
+}
+
+function saveConstruction(id) {
+  const cat = document.getElementById('f-ec-inp').value.trim();
+  const party = document.getElementById('f-ep').value.trim();
+  const paid = parseNum(document.getElementById('f-epd').value);
+  const total = parseNum(document.getElementById('f-et').value);
+  const pid = document.getElementById('f-epay').value;
+  const date = document.getElementById('f-ed').value;
+  const notes = document.getElementById('f-en').value.trim();
+  if (!cat) { toast('يرجى اختيار البند'); return; }
+  if (!paid) { toast('يرجى إدخال المبلغ'); return; }
+  if (id) {
+    const e = S.construction.find(x=>x.id===id);
+    if (e) { e.cat=cat;e.party=party;e.paid=paid;e.total=total;e.pid=pid;e.date=date;e.notes=notes; }
+  } else {
+    S.construction.push({id:uid(),cat,party,paid,total,pid,date,notes});
+  }
+  saveS(); closeModal(); render(); toast('تم الحفظ ✓', false);
+}
+
+function delConstruction(id) {
+  if (!confirm('حذف هذا المصروف؟')) return;
+  S.construction = S.construction.filter(e=>e.id!==id);
+  saveS(); render(); toast('تم الحذف');
+}
+
+// ═══════════════════════════════════════════════
+//  Contracts
+// ═══════════════════════════════════════════════
+let contractInstallsTemp = [];
+
+function toggleInstalls(catKey) {
+  const list = document.getElementById('ins-list-'+catKey);
+  const arr = document.getElementById('arr-'+catKey);
+  if (!list) return;
+  const open = list.style.display==='none';
+  list.style.display = open?'block':'none';
+  if (arr) arr.style.transform = open?'rotate(180deg)':'';
+}
+
+function openAddContractModal(cat='') {
+  const existingAmount = cat ? contractAmount(cat) : 0;
+  const existingInstalls = cat ? contractInstallments(cat) : [];
+  contractInstallsTemp = existingInstalls.map(i=>({...i}));
+  showModal(`
+  <div class="mhdr"><div class="mtitle">${cat?'تعديل عقد':'➕ إضافة عقد'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="frow"><label class="flabel">اسم العقد</label>
+    <input class="fc" id="ct-new-name" placeholder="مثال: الكهربائي" value="${cat||''}" ${cat?'readonly':''}>
+  </div>
+  <div class="frow"><label class="flabel">قيمة العقد الإجمالية</label>
+    <input class="fc" id="ct-new-val" type="text" inputmode="decimal" placeholder="0" value="${existingAmount||''}" oninput="onNumInput(this)">
+  </div>
+  <div style="border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:.78rem;font-weight:600;color:var(--txt2)">دفعات العقد <span style="font-weight:400">(اختياري)</span></div>
+      <button class="btn btn-p btn-sm" onclick="addInstallRow()">➕ دفعة</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <input class="fc" id="ct-auto-count" type="text" inputmode="numeric" placeholder="عدد الدفعات للتقسيم التلقائي" style="flex:1">
+      <button class="btn btn-g btn-sm" onclick="autoSplitInstalls()" style="white-space:nowrap">تقسيم تلقائي</button>
+    </div>
+    <div id="installs-list">
+      ${contractInstallsTemp.map((ins,i)=>installRowHtml(i,ins)).join('')}
+    </div>
+  </div>
+  <div class="fac">
+    <button class="btn btn-g" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-p" onclick="addCustomContract('${cat||''}')">💾 حفظ</button>
+  </div>`);
+}
+
+function installRowHtml(i, ins={}) {
+  return `<div id="ins-row-${i}" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <input class="fc" placeholder="رقم" type="text" inputmode="numeric" id="ins-num-${i}" value="${ins.num||i+1}" style="width:60px;flex-shrink:0">
+    <input class="fc" placeholder="المبلغ (اختياري)" type="text" inputmode="decimal" id="ins-amt-${i}" value="${ins.amount||''}" oninput="onNumInput(this)" style="flex:1">
+    <input class="fc" placeholder="وصف (اختياري)" id="ins-lbl-${i}" value="${ins.label||''}" style="flex:1">
+    <button onclick="removeInstallRow(${i})" style="background:var(--rl);border:none;border-radius:8px;padding:6px 10px;color:var(--r1);cursor:pointer;flex-shrink:0">🗑️</button>
+  </div>`;
+}
+
+function addInstallRow() {
+  contractInstallsTemp.push({});
+  const i = contractInstallsTemp.length-1;
+  document.getElementById('installs-list').insertAdjacentHTML('beforeend', installRowHtml(i));
+}
+
+function removeInstallRow(i) {
+  contractInstallsTemp.splice(i,1);
+  document.getElementById('installs-list').innerHTML = contractInstallsTemp.map((ins,idx)=>installRowHtml(idx,ins)).join('');
+}
+
+function autoSplitInstalls() {
+  const count = parseInt(document.getElementById('ct-auto-count')?.value)||0;
+  const total = parseNum(document.getElementById('ct-new-val')?.value||'');
+  if (!count||count<1) { toast('يرجى إدخال عدد الدفعات'); return; }
+  if (!total) { toast('يرجى إدخال قيمة العقد أولاً'); return; }
+  const each = Math.floor(total/count);
+  const remainder = total - each*count;
+  contractInstallsTemp = Array.from({length:count},(_,i)=>({num:i+1,amount:i===count-1?each+remainder:each,label:''}));
+  document.getElementById('installs-list').innerHTML = contractInstallsTemp.map((ins,i)=>installRowHtml(i,ins)).join('');
+}
+
+function addCustomContract(existingCat='') {
+  const name = document.getElementById('ct-new-name').value.trim();
+  const val = parseNum(document.getElementById('ct-new-val').value);
+  if (!name) { toast('يرجى كتابة اسم العقد'); return; }
+  if (!val) { toast('يرجى إدخال القيمة'); return; }
+  const installs = contractInstallsTemp.map((ins,i)=>({
+    num: +document.getElementById('ins-num-'+i)?.value||i+1,
+    amount: parseNum(document.getElementById('ins-amt-'+i)?.value||'')||null,
+    label: document.getElementById('ins-lbl-'+i)?.value||''
+  })).filter(ins=>ins.num);
+  const hasInstalls = installs.some(ins=>ins.amount);
+  S.contracts[name] = hasInstalls ? {amount:val, installments:installs} : val;
+  saveS(); closeModal(); render(); toast('تم الحفظ ✓', false);
+}
+
+function delCustomContract(cat) {
+  if (!confirm(`حذف عقد "${cat}"؟`)) return;
+  delete S.contracts[cat];
+  saveS(); render(); toast('تم الحذف');
+}
+
+// ═══════════════════════════════════════════════
+//  Monthly
+// ═══════════════════════════════════════════════
+function renderMonthly() {
+  const el = document.getElementById('pg-monthly');
+  const groups = {};
+  S.monthly.forEach(e=>{ const k=e.pid||'__none'; if(!groups[k])groups[k]=[]; groups[k].push(e); });
+  const totalAll = S.monthly.reduce((s,e)=>s+(+e.amount||0),0);
+
+  el.innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="st" style="margin:0">المصروفات الشهرية</div>
+    <div style="font-size:.8rem;color:var(--txt2)">الإجمالي: <strong>${kd(totalAll)}</strong></div>
+  </div>
+
+  ${S.payments.map((pay,pi)=>{
+    const exps=(groups[pay.id]||[]).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    if(!exps.length) return '';
+    const total=exps.reduce((s,e)=>s+(+e.amount||0),0);
+    return `<div class="st">دفعة ${pi+1}${pay.name?' — '+pay.name:''} <span style="font-weight:400;color:var(--txt2)">(${kd(total)})</span></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead><tr style="background:linear-gradient(135deg,var(--b2),var(--g2));color:#fff">
+          <th style="padding:8px 10px;text-align:right">البند</th>
+          <th style="padding:8px 10px;text-align:right">جهة الصرف</th>
+          <th style="padding:8px 10px;text-align:right">التاريخ</th>
+          <th style="padding:8px 10px;text-align:left">المبلغ</th>
+          <th style="padding:8px 6px"></th>
+        </tr></thead>
+        <tbody>
+        ${exps.map((e,i)=>`<tr style="border-bottom:1px solid var(--bdr);background:${i%2===0?'#fff':'#fafafa'}">
+          <td style="padding:8px 10px;font-weight:600">${e.cat||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2)">${e.party||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2);font-size:.75rem;white-space:nowrap">${fmtD(e.date)}</td>
+          <td style="padding:8px 10px;text-align:left;font-weight:700;color:var(--b2);white-space:nowrap">${kd(e.amount)}</td>
+          <td style="padding:8px 6px;text-align:center">
+            <button onclick="openMonthlyModal('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">✏️</button>
+            <button onclick="delMonthly('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">🗑️</button>
+          </td>
+        </tr>${e.notes?`<tr style="background:${i%2===0?'#fff':'#fafafa'};border-bottom:1px solid var(--bdr)"><td colspan="5" style="padding:2px 10px 7px;color:var(--txt2);font-size:.74rem">📝 ${e.notes}</td></tr>`:''}`).join('')}
+        <tr style="background:#e3f2fd"><td colspan="3" style="padding:8px 10px;font-weight:700">الإجمالي</td>
+          <td style="padding:8px 10px;font-weight:700;color:var(--b2);text-align:left">${kd(total)}</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  }).join('')}
+
+  ${(groups['__none']||[]).length>0?`
+  <div class="st">بدون دفعة</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+      <thead><tr style="background:linear-gradient(135deg,var(--b2),var(--g2));color:#fff">
+        <th style="padding:8px 10px;text-align:right">البند</th>
+        <th style="padding:8px 10px;text-align:right">جهة الصرف</th>
+        <th style="padding:8px 10px;text-align:right">التاريخ</th>
+        <th style="padding:8px 10px;text-align:left">المبلغ</th>
+        <th style="padding:8px 6px"></th>
+      </tr></thead>
+      <tbody>
+      ${(groups['__none']||[]).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0)).map((e,i)=>`
+        <tr style="border-bottom:1px solid var(--bdr);background:${i%2===0?'#fff':'#fafafa'}">
+          <td style="padding:8px 10px;font-weight:600">${e.cat||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2)">${e.party||'—'}</td>
+          <td style="padding:8px 10px;color:var(--txt2);font-size:.75rem">${fmtD(e.date)}</td>
+          <td style="padding:8px 10px;text-align:left;font-weight:700;color:var(--b2)">${kd(e.amount)}</td>
+          <td style="padding:8px 6px;text-align:center">
+            <button onclick="openMonthlyModal('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">✏️</button>
+            <button onclick="delMonthly('${e.id}')" style="background:none;border:none;cursor:pointer;font-size:.9rem">🗑️</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`:''}
+
+  <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="openMonthlyModal()">➕ إضافة مصروف شهري</button>`;
+}
+
+function openMonthlyModal(id='') {
+  const e = id ? S.monthly.find(x=>x.id===id) : null;
+  const cats = MONTHLY_CATS();
+  const latestPay = S.payments.length ? S.payments[S.payments.length-1] : null;
+  const catOpts = cats.map(c=>`<option value="${c}" ${e&&e.cat===c?'selected':''}>${c}</option>`).join('');
+
+  showModal(`
+  <div class="mhdr"><div class="mtitle">${e?'تعديل مصروف':'➕ مصروف شهري'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div class="frow"><label class="flabel">البند</label>
+    <input class="fc" id="f-mc-inp" list="mc-list" placeholder="اختر أو اكتب البند" value="${e?e.cat||'':''}" oninput="autofillMonthly(this.value)">
+    <datalist id="mc-list">${catOpts}</datalist>
+  </div>
+  <div class="frow"><label class="flabel">جهة الصرف</label><input class="fc" id="f-mp" placeholder="جهة الصرف" value="${e?e.party||'':''}"></div>
+  <div class="frow"><label class="flabel">المبلغ</label><input class="fc" id="f-ma" type="text" inputmode="decimal" placeholder="0" value="${e?e.amount||'':''}" oninput="onNumInput(this)"></div>
+  <div class="frow"><label class="flabel">الدفعة</label>
+    <select class="fc" id="f-mpay">
+      <option value="">— بدون دفعة —</option>
+      ${S.payments.map((p,i)=>`<option value="${p.id}" ${e?e.pid===p.id?'selected':'':latestPay&&p.id===latestPay.id?'selected':''}>${'دفعة '+(i+1)+(p.name?' — '+p.name:'')}</option>`).join('')}
+    </select>
+  </div>
+  <div class="frow"><label class="flabel">التاريخ</label><input class="fc" id="f-md" type="date" value="${e?e.date||'':''}"></div>
+  <div class="frow"><label class="flabel">ملاحظات</label><input class="fc" id="f-mn" placeholder="اختياري" value="${e?e.notes||'':''}"></div>
+  <div class="fac">
+    <button class="btn btn-g" onclick="closeModal()">إلغاء</button>
+    <button class="btn btn-p" onclick="saveMonthly('${id}')">💾 حفظ</button>
+  </div>`);
+}
+
+function autofillMonthly(cat) {
+  const party = catParty(cat);
+  const amount = catDefaultAmount(cat);
+  const fp = document.getElementById('f-mp'); if(fp&&!fp.value&&party) fp.value=party;
+  const fa = document.getElementById('f-ma'); if(fa&&!fa.value&&amount) fa.value=amount;
+}
+
+function saveMonthly(id) {
+  const cat = document.getElementById('f-mc-inp').value.trim();
+  const party = document.getElementById('f-mp').value.trim();
+  const amount = parseNum(document.getElementById('f-ma').value);
+  const pid = document.getElementById('f-mpay').value;
+  const date = document.getElementById('f-md').value;
+  const notes = document.getElementById('f-mn').value.trim();
+  if (!cat) { toast('يرجى اختيار البند'); return; }
+  if (!amount) { toast('يرجى إدخال المبلغ'); return; }
+  const src = pid ? 'payment' : 'general';
+  if (id) {
+    const e = S.monthly.find(x=>x.id===id);
+    if (e) { e.cat=cat;e.party=party;e.amount=amount;e.pid=pid;e.date=date;e.notes=notes;e.src=src; }
+  } else {
+    S.monthly.push({id:uid(),cat,party,amount,pid,date,notes,src});
+  }
+  saveS(); closeModal(); render(); toast('تم الحفظ ✓', false);
+}
+
+function delMonthly(id) {
+  if (!confirm('حذف هذا المصروف؟')) return;
+  S.monthly = S.monthly.filter(e=>e.id!==id);
+  saveS(); render(); toast('تم الحذف');
+}
+
+// ═══════════════════════════════════════════════
+//  Search
+// ═══════════════════════════════════════════════
+function renderSearch() {
+  const el = document.getElementById('pg-search');
+  if (!el.dataset.init) {
+    el.dataset.init = '1';
+    el.innerHTML = `
+    <div style="padding:0">
+      <div style="position:relative;margin-bottom:14px">
+        <input id="srch-inp" class="fc" type="text" placeholder="ابحث ببند، جهة صرف، أو تاريخ..."
+          oninput="searchQ=this.value;renderSearchResults()"
+          style="padding-left:36px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none">🔍</span>
+        <button id="srch-clr" onclick="searchQ='';document.getElementById('srch-inp').value='';renderSearchResults()"
+          style="display:none;position:absolute;left:34px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1rem;cursor:pointer;color:var(--txt2)">✕</button>
+      </div>
+      <div id="srch-results"></div>
+    </div>`;
+  }
+  const inp = document.getElementById('srch-inp');
+  if (inp && inp.value !== searchQ) inp.value = searchQ;
+  renderSearchResults();
+}
+
+function renderSearchResults() {
+  const clr = document.getElementById('srch-clr');
+  if (clr) clr.style.display = searchQ?'block':'none';
+  const all = [
+    ...S.construction.map(e=>({...e,_t:'بناء'})),
+    ...S.monthly.map(e=>({...e,_t:'شهري',paid:e.amount}))
+  ].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  const q = searchQ.trim().toLowerCase();
+  const results = q ? all.filter(e=>
+    (e.cat||'').toLowerCase().includes(q)||(e.party||'').toLowerCase().includes(q)||
+    (e.date||'').includes(q)||fmtD(e.date).includes(q)
+  ) : all;
+  const total = results.reduce((s,e)=>s+(+e.paid||0),0);
+  const el = document.getElementById('srch-results');
+  if (!el) return;
+  el.innerHTML = results.length===0?`<div style="text-align:center;color:var(--txt2);padding:40px 0">لا توجد نتائج</div>`:`
+    <div class="card" style="margin-bottom:10px;background:linear-gradient(135deg,var(--gl),var(--bl));border:1px solid var(--bdr)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="lbl">إجمالي النتائج</div><div class="val g" style="font-size:1.2rem">${kd(total)}</div></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="printSearchResults()" style="background:var(--g2);border:none;border-radius:10px;padding:8px 12px;color:#fff;font-size:.82rem;cursor:pointer">🖨️ طباعة</button>
+          <div style="text-align:center;background:var(--g2);color:#fff;border-radius:12px;padding:8px 16px">
+            <div style="font-size:1.5rem;font-weight:700">${results.length}</div>
+            <div style="font-size:.68rem;opacity:.9">بند</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+        <thead><tr style="background:linear-gradient(135deg,var(--g1),var(--b2));color:#fff">
+          <th style="padding:9px 10px;text-align:right">البند</th>
+          <th style="padding:9px 10px;text-align:right">جهة الصرف</th>
+          <th style="padding:9px 10px;text-align:right">التاريخ</th>
+          <th style="padding:9px 10px;text-align:left">المبلغ</th>
+        </tr></thead>
+        <tbody>
+          ${results.map((e,i)=>`
+          <tr style="border-bottom:1px solid var(--bdr);background:${i%2===0?'#fff':'#fafafa'}">
+            <td style="padding:8px 10px"><div style="font-weight:600">${e.cat||'—'}</div><div style="font-size:.72rem;color:var(--b2);margin-top:2px">${e._t}</div></td>
+            <td style="padding:8px 10px;color:var(--txt2)">${e.party||'—'}</td>
+            <td style="padding:8px 10px;color:var(--txt2);white-space:nowrap">${fmtD(e.date)}</td>
+            <td style="padding:8px 10px;text-align:left;font-weight:700;color:var(--g2);white-space:nowrap">${kd(+e.paid||0)}</td>
+          </tr>
+          ${e.notes?`<tr style="background:${i%2===0?'#fff':'#fafafa'};border-bottom:1px solid var(--bdr)">
+            <td colspan="4" style="padding:4px 10px 8px;color:var(--txt2);font-size:.75rem">📝 ${e.notes}</td>
+          </tr>`:''}`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function printSearchResults() {
+  const all = [
+    ...S.construction.map(e=>({...e,_t:'بناء'})),
+    ...S.monthly.map(e=>({...e,_t:'شهري',paid:e.amount}))
+  ].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  const q=(document.getElementById('srch-inp')?.value||'').trim().toLowerCase();
+  const results=q?all.filter(e=>(e.cat||'').toLowerCase().includes(q)||(e.party||'').toLowerCase().includes(q)||(e.date||'').includes(q)||fmtD(e.date).includes(q)):all;
+  if(!results.length){toast('لا توجد نتائج للطباعة');return;}
+  const total=results.reduce((s,e)=>s+(+e.paid||0),0);
+  const label=q?`نتائج البحث: "${q}"`:'جميع المصروفات';
+  const date=new Date().toLocaleDateString('ar-KW');
+  const rows=results.map((e,i)=>`<tr><td>${e._t}</td><td>${e.cat||'—'}</td><td>${e.party||'—'}</td><td>${fmtD(e.date)}</td><td style="text-align:left;font-weight:700">${kd(+e.paid||0)}</td></tr>${e.notes?`<tr><td colspan="5" style="font-size:.75rem;color:#666;padding:2px 8px 6px">📝 ${e.notes}</td></tr>`:''}`).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>${label}</title><style>body{font-family:system-ui,Arial,sans-serif;direction:rtl;padding:20px;color:#111}h2{text-align:center;color:#1b5e20;margin-bottom:4px}.sub{text-align:center;color:#666;font-size:.85rem;margin-bottom:4px}.total{text-align:center;font-size:1rem;font-weight:700;color:#1b5e20;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.82rem}th{background:#1b5e20;color:#fff;padding:8px 10px;text-align:right}td{padding:7px 10px;border-bottom:1px solid #ddd;text-align:right}tr:nth-child(even) td{background:#f0f8f0}th:last-child,td:last-child{text-align:left}@media print{button{display:none}}</style></head><body><h2>🏗 متابعة البناء</h2><div class="sub">${label} — ${date}</div><div class="total">الإجمالي: ${kd(total)}</div><table><thead><tr><th>النوع</th><th>البند</th><th>جهة الصرف</th><th>التاريخ</th><th>المبلغ</th></tr></thead><tbody>${rows}</tbody><tfoot><tr style="background:#e8f5e9"><td colspan="4" style="padding:8px 10px;font-weight:700">الإجمالي</td><td style="text-align:left;font-weight:700;color:#1b5e20">${kd(total)}</td></tr></tfoot></table><br><button onclick="window.print()" style="padding:10px 24px;background:#1b5e20;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer">🖨️ طباعة / حفظ PDF</button></body></html>`);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════════════
+//  Settings
+// ═══════════════════════════════════════════════
+function renderSettings() {
+  const el = document.getElementById('pg-settings');
+  el.innerHTML = `
+  <div class="st" style="margin-top:0">اسم المشروع</div>
+  <div class="card">
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="fc" id="set-projname" value="${S.config.projectName||''}" placeholder="اسم مشروعك" style="flex:1">
+      <button class="btn btn-p btn-sm" onclick="saveProjectName()">حفظ</button>
+    </div>
+  </div>
+
+  <div class="st">بنود البناء</div>
+  <div class="card">
+    <div class="chip-list" id="cc-chips">
+      ${S.config.constructionCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}<button onclick="removeConstrCat(${i})">✕</button></div>`).join('')}
+    </div>
+    <div class="cat-row">
+      <input class="fc" id="cc-name" placeholder="اسم البند" style="flex:1">
+      <input class="fc" id="cc-party" placeholder="جهة الصرف" style="flex:1">
+      <button class="btn btn-p btn-sm" onclick="addConstrCat()">➕</button>
+    </div>
+  </div>
+
+  <div class="st">البنود الشهرية</div>
+  <div class="card">
+    <div class="chip-list" id="mc-chips">
+      ${S.config.monthlyCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}${c.amount?' · '+kd(c.amount):''}<button onclick="removeMonthlyCat(${i})">✕</button></div>`).join('')}
+    </div>
+    <div class="cat-row">
+      <input class="fc" id="mc-name" placeholder="اسم البند" style="flex:1">
+      <input class="fc" id="mc-party" placeholder="جهة الصرف" style="flex:1">
+    </div>
+    <div class="cat-row" style="margin-top:8px">
+      <input class="fc" id="mc-amount" type="text" inputmode="decimal" placeholder="مبلغ افتراضي (اختياري)" oninput="onNumInput(this)" style="flex:1">
+      <button class="btn btn-p btn-sm" onclick="addMonthlyCat()">➕</button>
+    </div>
+  </div>
+
+  <div class="st">فئات العقود</div>
+  <div class="card">
+    <p style="font-size:.8rem;color:var(--txt2);margin-bottom:10px">اختر من بنود البناء أيها تصبح عقوداً</p>
+    ${S.config.constructionCats.map(c=>`
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);cursor:pointer">
+      <input type="checkbox" ${S.config.contractCats.includes(c.name)?'checked':''} onchange="toggleContractCat('${c.name}',this.checked)" style="width:18px;height:18px;accent-color:var(--g2)">
+      <span style="font-size:.9rem">${c.name}</span>
+    </label>`).join('')}
+    ${S.config.constructionCats.length===0?`<div style="color:var(--txt2);font-size:.82rem">أضف بنود البناء أولاً</div>`:''}
+  </div>
+
+  <div class="st">نقل البيانات</div>
+  <div class="card">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-g" style="justify-content:flex-start" onclick="exportData()">📤 تصدير نسخة احتياطية</button>
+      <label class="btn btn-g" style="justify-content:flex-start;cursor:pointer">📥 استيراد نسخة احتياطية<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;padding:16px;background:#fff3e0;border-radius:12px;border:1px solid #ffe0b2">
+    <div style="font-size:.82rem;font-weight:700;color:#e65100;margin-bottom:8px">⚠️ منطقة الخطر</div>
+    <button class="btn btn-r" onclick="resetSetup()">🔄 إعادة تشغيل معالج الإعداد</button>
+  </div>`;
+}
+
+function saveProjectName() {
+  S.config.projectName = document.getElementById('set-projname').value.trim()||'مشروع البناء';
+  document.getElementById('hdr-sub').textContent = S.config.projectName;
+  saveS(); toast('تم الحفظ ✓', false);
+}
+
+function addConstrCat() {
+  const name = document.getElementById('cc-name').value.trim();
+  const party = document.getElementById('cc-party').value.trim();
+  if (!name) { toast('يرجى إدخال اسم البند'); return; }
+  if (S.config.constructionCats.find(c=>c.name===name)) { toast('البند موجود مسبقاً'); return; }
+  S.config.constructionCats.push({name, party});
+  document.getElementById('cc-name').value=''; document.getElementById('cc-party').value='';
+  saveS(); renderSettings();
+}
+
+function removeConstrCat(i) {
+  S.config.constructionCats.splice(i,1);
+  saveS(); renderSettings();
+}
+
+function addMonthlyCat() {
+  const name = document.getElementById('mc-name').value.trim();
+  const party = document.getElementById('mc-party').value.trim();
+  const amount = parseNum(document.getElementById('mc-amount').value);
+  if (!name) { toast('يرجى إدخال اسم البند'); return; }
+  if (S.config.monthlyCats.find(c=>c.name===name)) { toast('البند موجود مسبقاً'); return; }
+  S.config.monthlyCats.push({name, party, amount});
+  document.getElementById('mc-name').value=''; document.getElementById('mc-party').value=''; document.getElementById('mc-amount').value='';
+  saveS(); renderSettings();
+}
+
+function removeMonthlyCat(i) {
+  S.config.monthlyCats.splice(i,1);
+  saveS(); renderSettings();
+}
+
+function toggleContractCat(name, checked) {
+  if (checked) { if(!S.config.contractCats.includes(name)) S.config.contractCats.push(name); }
+  else S.config.contractCats = S.config.contractCats.filter(c=>c!==name);
+  saveS();
+}
+
+function resetSetup() {
+  if (!confirm('هذا سيعيد تشغيل معالج الإعداد فقط، بياناتك محفوظة. هل تريد المتابعة؟')) return;
+  localStorage.removeItem('btrk-setup');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════
+//  Export
+// ═══════════════════════════════════════════════
+let exportState = { fmt:'', section:'', filter:'' };
+
+function openExportModal() {
+  exportState = {fmt:'',section:'',filter:''};
+  renderExportStep1();
+}
+
+function renderExportStep1() {
+  showModal(`
+  <div class="mhdr"><div class="mtitle">📤 تصدير البيانات</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div style="margin-bottom:16px;font-size:.85rem;color:var(--txt2);font-weight:600">الخطوة ١ من ٣ — اختر الصيغة</div>
+  <div style="display:flex;gap:12px">
+    <button class="btn btn-g" style="flex:1;padding:18px;font-size:1rem;flex-direction:column;gap:6px" onclick="exportState.fmt='excel';renderExportStep2()">
+      <div style="font-size:1.6rem">📊</div><div>Excel</div>
+    </button>
+    <button class="btn btn-g" style="flex:1;padding:18px;font-size:1rem;flex-direction:column;gap:6px" onclick="exportState.fmt='pdf';renderExportStep2()">
+      <div style="font-size:1.6rem">📄</div><div>PDF</div>
+    </button>
+  </div>`);
+}
+
+function renderExportStep2() {
+  showModal(`
+  <div class="mhdr"><div class="mtitle">📤 تصدير — ${exportState.fmt==='pdf'?'PDF':'Excel'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div style="margin-bottom:16px;font-size:.85rem;color:var(--txt2);font-weight:600">الخطوة ٢ من ٣ — اختر القسم</div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    ${[['construction','🔨 جدول البناء'],['monthly','📅 المصروفات الشهرية'],['contracts','📋 العقود'],['all','📦 كامل البيانات']].map(([v,l])=>`
+    <button class="btn btn-g" style="justify-content:flex-start;padding:14px;font-size:.95rem" onclick="exportState.section='${v}';renderExportStep3()">${l}</button>`).join('')}
+  </div>
+  <div style="margin-top:12px"><button class="btn" style="color:var(--txt2)" onclick="renderExportStep1()">← رجوع</button></div>`);
+}
+
+function renderExportStep3() {
+  const sec=exportState.section;
+  if(sec==='all'){doExport();return;}
+  const payments=S.payments.map((p,i)=>({id:p.id,label:`دفعة ${i+1}${p.name?' — '+p.name:''}`}));
+  const cats=sec==='construction'?CONSTRUCTION_CATS():sec==='monthly'?MONTHLY_CATS():allContractCats();
+  const parties=[...new Set((sec==='construction'?S.construction:sec==='monthly'?S.monthly:[]).map(t=>t.party).filter(Boolean))];
+  const filterRows=[['all','📦 كامل القسم']];
+  if(sec!=='contracts') payments.forEach(p=>filterRows.push(['payment:'+p.id,'💰 '+p.label]));
+  cats.forEach(c=>filterRows.push(['cat:'+c,'🏷️ '+c]));
+  if(parties.length) parties.forEach(p=>filterRows.push(['party:'+p,'👤 '+p]));
+  showModal(`
+  <div class="mhdr"><div class="mtitle">📤 فلتر التصدير</div><button class="mclose" onclick="closeModal()">✕</button></div>
+  <div style="margin-bottom:16px;font-size:.85rem;color:var(--txt2);font-weight:600">الخطوة ٣ من ٣ — اختر الفلتر</div>
+  <div style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto">
+    ${filterRows.map(([v,l])=>`<button class="btn btn-g" style="justify-content:flex-start;padding:12px;font-size:.88rem" onclick="exportState.filter='${v}';doExport()">${l}</button>`).join('')}
+  </div>
+  <div style="margin-top:12px"><button class="btn" style="color:var(--txt2)" onclick="renderExportStep2()">← رجوع</button></div>`);
+}
+
+function doExport() {
+  closeModal();
+  const {fmt,section,filter}=exportState;
+  const rows=getExportRows(section,filter);
+  if(!rows.length){toast('لا توجد بيانات للتصدير');return;}
+  if(fmt==='excel') exportExcel(rows,section);
+  else exportPDF(rows,section);
+}
+
+function getExportRows(section,filter) {
+  const allRows=[];
+  const sections=section==='all'?['construction','monthly','contracts']:[section];
+  sections.forEach(sec=>{
+    if(sec==='contracts'){
+      allContractCats().forEach(cat=>{
+        const total=contractAmount(cat),paid=contractPaid(cat);
+        allRows.push({القسم:'عقود',البند:cat,الجهة:'',التاريخ:'',المبلغ:total,المدفوع:paid,المتبقي:total-paid,الدفعة:''});
+      });return;
+    }
+    const txs=sec==='construction'?S.construction:S.monthly;
+    txs.forEach(tx=>{
+      const pid=tx.pid||'';
+      const pidx=S.payments.findIndex(p=>p.id===pid);
+      const pLabel=pidx>=0?`دفعة ${pidx+1}`:'';
+      if(filter&&filter!=='all'){
+        if(filter.startsWith('payment:')){const id=filter.slice(8);if(pid!=id)return;}
+        else if(filter.startsWith('cat:')){if(tx.cat!==filter.slice(4))return;}
+        else if(filter.startsWith('party:')){if(tx.party!==filter.slice(6))return;}
+      }
+      const amt=sec==='construction'?(+tx.paid||0):(+tx.amount||0);
+      const tot=sec==='construction'?(+tx.total||0):0;
+      allRows.push({القسم:sec==='construction'?'بناء':'شهرية',البند:tx.cat||'',الجهة:tx.party||'',التاريخ:tx.date||'',المدفوع:amt,الإجمالي:tot||'',الملاحظات:tx.notes||'',الدفعة:pLabel});
+    });
+  });
+  return allRows;
+}
+
+function exportExcel(rows,section) {
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'بيانات');
+  XLSX.writeFile(wb,`build-tracker-${section}-${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('تم تصدير Excel ✓',false);
+}
+
+function exportPDF(rows,section) {
+  const cols=Object.keys(rows[0]);
+  const sectionLabel=section==='construction'?'جدول البناء':section==='monthly'?'المصروفات الشهرية':section==='contracts'?'العقود':'كامل البيانات';
+  const date=new Date().toLocaleDateString('ar-KW');
+  const thead=cols.map(c=>`<th>${c}</th>`).join('');
+  const tbody=rows.map(r=>`<tr>${cols.map(c=>`<td>${r[c]===''||r[c]==null?'—':r[c]}</td>`).join('')}</tr>`).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>${sectionLabel}</title><style>body{font-family:system-ui,Arial,sans-serif;direction:rtl;padding:20px;color:#111}h2{text-align:center;color:#1b5e20;margin-bottom:4px}.sub{text-align:center;color:#666;font-size:.85rem;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.82rem}th{background:#1b5e20;color:#fff;padding:8px 10px;text-align:right}td{padding:7px 10px;border-bottom:1px solid #ddd;text-align:right}tr:nth-child(even) td{background:#f0f8f0}@media print{button{display:none}}</style></head><body><h2>🏗 متابعة البناء</h2><div class="sub">${sectionLabel} — ${date}</div><table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table><br><button onclick="window.print()" style="padding:10px 24px;background:#1b5e20;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer">🖨️ طباعة / حفظ PDF</button></body></html>`);
+  win.document.close();
+  toast('افتح الصفحة الجديدة واضغط طباعة ✓',false);
+}
+
+// ═══════════════════════════════════════════════
+//  Data Import/Export
+// ═══════════════════════════════════════════════
+function openDataModal() { renderSettings(); go('settings'); }
+
+function exportData() {
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`build-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  toast('تم تصدير النسخة الاحتياطية ✓',false);
+}
+
+function importData(event) {
+  const file=event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try {
+      const data=JSON.parse(e.target.result);
+      if(!data.payments||!data.construction) throw new Error('ملف غير صالح');
+      if(!confirm('سيتم استبدال جميع البيانات الحالية. هل أنت متأكد؟')) return;
+      S=data;
+      if(!S.config) S.config={projectName:'مشروع البناء',constructionCats:[],monthlyCats:[],contractCats:[]};
+      saveS(false); render(); toast('تم الاستيراد ✓',false);
+    } catch(err) { toast('خطأ: ملف غير صالح'); }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════
+//  Setup Wizard
+// ═══════════════════════════════════════════════
+let setupStep = 1;
+let setupData = { projectName:'', constructionCats:[], monthlyCats:[], contractCats:[] };
+
+function showSetup() {
+  document.getElementById('setup-ov').style.display='flex';
+  setupStep=1;
+  setupData={projectName:'',constructionCats:[],monthlyCats:[],contractCats:[]};
+  renderSetupStep();
+}
+
+function hideSetup() {
+  document.getElementById('setup-ov').style.display='none';
+}
+
+function renderSetupStep() {
+  const card=document.getElementById('setup-card');
+  const steps=`<div class="setup-steps">${[1,2,3,4].map(i=>`<div class="setup-step${setupStep>=i?' done':''}"></div>`).join('')}</div>`;
+
+  if (setupStep===1) {
+    card.innerHTML=`
+    ${steps}
+    <div style="font-size:2rem;margin-bottom:8px">🏗</div>
+    <div class="setup-title">مرحباً بك في متابعة البناء</div>
+    <div class="setup-sub">سنساعدك في إعداد التطبيق حسب مشروعك. يمكنك تخطي هذا الإعداد والبدء مباشرة.</div>
+    <div class="frow"><label class="flabel">اسم مشروعك</label>
+    <input class="fc" id="sw-pname" placeholder="مثال: بناء منزل العائلة" value="${setupData.projectName}"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+      <button class="btn btn-p" style="justify-content:center" onclick="sw1Next()">التالي ←</button>
+      <button class="btn btn-g" style="justify-content:center" onclick="skipSetup()">تخطي والبدء مباشرة</button>
+    </div>`;
+  }
+  else if (setupStep===2) {
+    card.innerHTML=`
+    ${steps}
+    <div class="setup-title">بنود البناء</div>
+    <div class="setup-sub">أضف البنود الرئيسية لمشروع البناء (مثل: كهرباء، صحي، مقاول...) وجهة الصرف لكل بند. يمكن إضافتها لاحقاً من الإعدادات.</div>
+    <div class="chip-list" id="sw-cc-chips">
+      ${setupData.constructionCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}<button onclick="swRemoveCC(${i})">✕</button></div>`).join('')}
+    </div>
+    <div class="cat-row">
+      <input class="fc" id="sw-cc-name" placeholder="اسم البند" style="flex:1">
+      <input class="fc" id="sw-cc-party" placeholder="جهة الصرف" style="flex:1">
+      <button class="btn btn-p btn-sm" onclick="swAddCC()">➕</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-g" style="flex:1;justify-content:center" onclick="setupStep=1;renderSetupStep()">→ رجوع</button>
+      <button class="btn btn-p" style="flex:1;justify-content:center" onclick="setupStep=3;renderSetupStep()">التالي ←</button>
+    </div>`;
+  }
+  else if (setupStep===3) {
+    card.innerHTML=`
+    ${steps}
+    <div class="setup-title">البنود الشهرية</div>
+    <div class="setup-sub">أضف المصروفات الشهرية الثابتة (مثل: حارس، مياه، إشراف...) مع المبلغ الافتراضي إن أردت. يمكن إضافتها لاحقاً.</div>
+    <div class="chip-list" id="sw-mc-chips">
+      ${setupData.monthlyCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}${c.amount?' · '+c.amount+' د.ك':''}<button onclick="swRemoveMC(${i})">✕</button></div>`).join('')}
+    </div>
+    <div class="cat-row">
+      <input class="fc" id="sw-mc-name" placeholder="اسم البند" style="flex:1">
+      <input class="fc" id="sw-mc-party" placeholder="جهة الصرف" style="flex:1">
+    </div>
+    <div class="cat-row" style="margin-top:8px">
+      <input class="fc" id="sw-mc-amount" type="text" inputmode="decimal" placeholder="مبلغ افتراضي (اختياري)" oninput="onNumInput(this)" style="flex:1">
+      <button class="btn btn-p btn-sm" onclick="swAddMC()">➕</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-g" style="flex:1;justify-content:center" onclick="setupStep=2;renderSetupStep()">→ رجوع</button>
+      <button class="btn btn-p" style="flex:1;justify-content:center" onclick="setupStep=4;renderSetupStep()">التالي ←</button>
+    </div>`;
+  }
+  else if (setupStep===4) {
+    card.innerHTML=`
+    ${steps}
+    <div class="setup-title">فئات العقود</div>
+    <div class="setup-sub">اختر أي البنود ستكون عقوداً ذات قيمة محددة. يمكن تعديلها لاحقاً.</div>
+    <div style="max-height:200px;overflow-y:auto;margin-bottom:16px">
+      ${setupData.constructionCats.length===0?`<div style="color:var(--txt2);font-size:.85rem;padding:10px 0">لم تضف أي بنود بناء بعد</div>`
+      :setupData.constructionCats.map(c=>`
+      <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);cursor:pointer">
+        <input type="checkbox" onchange="swToggleContract('${c.name}',this.checked)" ${setupData.contractCats.includes(c.name)?'checked':''} style="width:18px;height:18px;accent-color:var(--g2)">
+        <span>${c.name}</span>
+      </label>`).join('')}
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-g" style="flex:1;justify-content:center" onclick="setupStep=3;renderSetupStep()">→ رجوع</button>
+      <button class="btn btn-p" style="flex:1;justify-content:center" onclick="finishSetup()">✅ ابدأ الآن</button>
+    </div>`;
+  }
+}
+
+function sw1Next() {
+  setupData.projectName = document.getElementById('sw-pname')?.value.trim()||'مشروع البناء';
+  setupStep=2; renderSetupStep();
+}
+
+function swAddCC() {
+  const name=document.getElementById('sw-cc-name').value.trim();
+  const party=document.getElementById('sw-cc-party').value.trim();
+  if(!name){toast('يرجى إدخال اسم البند');return;}
+  if(setupData.constructionCats.find(c=>c.name===name)){toast('البند موجود مسبقاً');return;}
+  setupData.constructionCats.push({name,party});
+  document.getElementById('sw-cc-name').value=''; document.getElementById('sw-cc-party').value='';
+  document.getElementById('sw-cc-chips').innerHTML=setupData.constructionCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}<button onclick="swRemoveCC(${i})">✕</button></div>`).join('');
+}
+
+function swRemoveCC(i) { setupData.constructionCats.splice(i,1); renderSetupStep(); }
+
+function swAddMC() {
+  const name=document.getElementById('sw-mc-name').value.trim();
+  const party=document.getElementById('sw-mc-party').value.trim();
+  const amount=parseNum(document.getElementById('sw-mc-amount').value);
+  if(!name){toast('يرجى إدخال اسم البند');return;}
+  if(setupData.monthlyCats.find(c=>c.name===name)){toast('البند موجود مسبقاً');return;}
+  setupData.monthlyCats.push({name,party,amount});
+  document.getElementById('sw-mc-name').value=''; document.getElementById('sw-mc-party').value=''; document.getElementById('sw-mc-amount').value='';
+  document.getElementById('sw-mc-chips').innerHTML=setupData.monthlyCats.map((c,i)=>`<div class="chip">${c.name}${c.party?' · '+c.party:''}${c.amount?' · '+c.amount+' د.ك':''}<button onclick="swRemoveMC(${i})">✕</button></div>`).join('');
+}
+
+function swRemoveMC(i) { setupData.monthlyCats.splice(i,1); renderSetupStep(); }
+
+function swToggleContract(name,checked) {
+  if(checked){if(!setupData.contractCats.includes(name))setupData.contractCats.push(name);}
+  else setupData.contractCats=setupData.contractCats.filter(c=>c!==name);
+}
+
+function finishSetup() {
+  S.config.projectName = setupData.projectName||'مشروع البناء';
+  S.config.constructionCats = setupData.constructionCats;
+  S.config.monthlyCats = setupData.monthlyCats;
+  S.config.contractCats = setupData.contractCats;
+  document.getElementById('hdr-sub').textContent = S.config.projectName;
+  localStorage.setItem('btrk-setup','done');
+  saveS(false);
+  hideSetup();
+  render();
+  toast('تم الإعداد، أهلاً بك! 🎉', false);
+}
+
+function skipSetup() {
+  localStorage.setItem('btrk-setup','done');
+  hideSetup();
+}
+
+// ═══════════════════════════════════════════════
+//  Init
+// ═══════════════════════════════════════════════
+loadS();
+if (localStorage.getItem('btrk')) undoStack.push(localStorage.getItem('btrk'));
+document.getElementById('hdr-sub').textContent = S.config.projectName||'تتبع مصروفات بناء منزلك';
+go('summary');
+
+if (!localStorage.getItem('btrk-setup')) {
+  showSetup();
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
