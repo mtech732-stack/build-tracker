@@ -941,6 +941,11 @@ async function saveExp(pid, eid) {
   } else {
     S.construction.push({id:uid(),pid,cat,party,paid,total,date,notes,inv});
   }
+  // إذا أُدخل مبلغ إجمالي، سجّل البند كعقد تلقائياً
+  if (total) {
+    if (!S.config.contractCats.includes(cat)) S.config.contractCats.push(cat);
+    if (!S.contracts[cat]) S.contracts[cat] = {amount: total, installments: []};
+  }
   saveS(); closeModal(); render(); toast(eid?'تم التعديل ✓':'تمت الإضافة ✓');
 }
 
