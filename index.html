@@ -616,7 +616,7 @@ function renderConstruction() {
   el.innerHTML = pays.map(pay=>{
     const exps = S.construction.filter(e=>e.pid===pay.id).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
     const monthlyExps = S.monthly.filter(e=>e.src==='payment'&&e.pid===pay.id).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
-    const allRows = [...exps.map(e=>({...e,_type:'c'})), ...monthlyExps.map(e=>({...e,_type:'m',paid:e.amount}))].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const allRows = [...exps.map(e=>({...e,_type:'c'})), ...monthlyExps.map(e=>({...e,_type:'m',paid:e.amount}))].sort((a,b)=>{const d=new Date(a.date||0)-new Date(b.date||0); return d!==0?d:a.id.localeCompare(b.id);});
     const used = paymentUsed(pay.id);
     const left = paymentLeft(pay.id);
     const carried = +pay.carried||0;
