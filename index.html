@@ -615,6 +615,8 @@ function renderConstruction() {
 
   el.innerHTML = pays.map(pay=>{
     const exps = S.construction.filter(e=>e.pid===pay.id).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const monthlyExps = S.monthly.filter(e=>e.src==='payment'&&e.pid===pay.id).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const allRows = [...exps.map(e=>({...e,_type:'c'})), ...monthlyExps.map(e=>({...e,_type:'m',paid:e.amount}))].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
     const used = paymentUsed(pay.id);
     const left = paymentLeft(pay.id);
     const carried = +pay.carried||0;
@@ -631,7 +633,7 @@ function renderConstruction() {
         </div>
         <div class="ph-info">
           <div class="ph-title">الدفعة ${pay.num}${pay.name?' — '+pay.name:''}</div>
-          <div class="ph-sub">${fmtD(pay.date)} · ${exps.length} بند${carried>0?` · مرحّل: ${kd(carried)}`:''}</div>
+          <div class="ph-sub">${fmtD(pay.date)} · ${allRows.length} بند${carried>0?` · مرحّل: ${kd(carried)}`:''}</div>
         </div>
         <div class="ph-nums">
           <div class="ph-num">
@@ -659,7 +661,7 @@ function renderConstruction() {
           ${nextPay&&left>0?`<button class="btn btn-sm" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9" onclick="carryOver('${pay.id}','${nextPay.id}',${left})">↩️ ترحيل المتبقي</button>`:''}
           <button class="btn btn-d btn-sm" onclick="delPayment('${pay.id}')">🗑️ حذف</button>
         </div>
-        ${exps.length?`
+        ${allRows.length?`
         <div class="tbl-wrap">
         <table>
           <thead><tr>
@@ -668,12 +670,13 @@ function renderConstruction() {
             <th>التاريخ</th><th>ملاحظات</th><th>فاتورة</th><th></th>
           </tr></thead>
           <tbody>
-          ${exps.map((e,i)=>{
-            const hasT=e.total&&+e.total>0;
+          ${allRows.map((e,i)=>{
+            const isMonthly = e._type==='m';
+            const hasT=!isMonthly&&e.total&&+e.total>0;
             const eLeft=hasT?+e.total-(+e.paid||0):null;
-            return `<tr>
+            return `<tr style="${isMonthly?'background:var(--gl,#f0fdf4)':''}">
               <td>${i+1}</td>
-              <td><span class="bg ${isContract(e.cat)?'bg-b':'bg-g'}">${e.cat}</span></td>
+              <td><span class="bg ${isMonthly?'bg-g':isContract(e.cat)?'bg-b':'bg-g'}">${e.cat}</span>${isMonthly?'<span style="font-size:.65rem;background:#d1fae5;color:#065f46;border-radius:4px;padding:1px 5px;margin-right:4px">شهري</span>':''}</td>
               <td>${e.party||'—'}</td>
               <td style="direction:ltr;text-align:right"><strong>${kd(e.paid)}</strong></td>
               <td style="direction:ltr;text-align:right">${hasT?kd(e.total):'—'}</td>
@@ -683,15 +686,18 @@ function renderConstruction() {
               <td>${noteCell(e.notes||'')}</td>
               <td>${e.inv?`<a href="${e.inv}" target="_blank" class="invlink">📎</a>`:'—'}</td>
               <td style="white-space:nowrap">
-                <button class="bic" onclick="openExpModal('${pay.id}','${e.id}')" title="تعديل">✏️</button>
-                <button class="bic" onclick="delExp('${e.id}')" title="حذف">🗑️</button>
+                ${isMonthly
+                  ?`<button class="bic" onclick="openMonthlyModal('${e.id}')" title="تعديل">✏️</button>
+                    <button class="bic" onclick="delMonthly('${e.id}')" title="حذف">🗑️</button>`
+                  :`<button class="bic" onclick="openExpModal('${pay.id}','${e.id}')" title="تعديل">✏️</button>
+                    <button class="bic" onclick="delExp('${e.id}')" title="حذف">🗑️</button>`}
               </td>
             </tr>`;
           }).join('')}
           </tbody>
           <tfoot><tr class="tfoot">
             <td colspan="3">مجموع الدفعة ${pay.num}</td>
-            <td style="direction:ltr;text-align:right" colspan="7">${kd(exps.reduce((s,e)=>s+(+e.paid||0),0))}</td>
+            <td style="direction:ltr;text-align:right" colspan="7">${kd(allRows.reduce((s,e)=>s+(+e.paid||0),0))}</td>
           </tr></tfoot>
         </table>
         </div>`
