@@ -1937,6 +1937,27 @@ if (!localStorage.getItem('btrk-setup')) showSetup();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
+
+// تنبيه تثبيت PWA
+(function(){
+  const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  const dismissed = localStorage.getItem('btrk-pwa-hint');
+  if (isStandalone || dismissed) return;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  if (!isIOS && !isAndroid) return;
+  const msg = isIOS
+    ? 'لحفظ بياناتك: افتح في Safari ← اضغط ⬆️ ← "إضافة إلى الشاشة الرئيسية"'
+    : 'لحفظ بياناتك: اضغط ⋮ ← "إضافة إلى الشاشة الرئيسية"';
+  const banner = document.createElement('div');
+  banner.innerHTML = `
+    <div style="position:fixed;bottom:80px;left:12px;right:12px;background:#1a1a2e;color:#fff;border-radius:14px;padding:14px 16px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.35);display:flex;align-items:flex-start;gap:10px">
+      <span style="font-size:1.4rem;line-height:1">📌</span>
+      <div style="flex:1;font-size:.82rem;line-height:1.5">${msg}</div>
+      <button onclick="localStorage.setItem('btrk-pwa-hint','1');this.closest('div').parentElement.remove()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;color:#fff;padding:4px 10px;cursor:pointer;white-space:nowrap;font-size:.78rem">فهمت</button>
+    </div>`;
+  document.body.appendChild(banner);
+})();
 </script>
 </body>
 </html>
