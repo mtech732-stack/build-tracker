@@ -951,9 +951,11 @@ let mSrc = 'private';
 
 function openMonthlyModal(eid=null) {
   const e = eid ? S.monthly.find(x=>x.id===eid) : null;
-  mSrc = e?.src||'private';
-  const payOpts = S.payments.sort((a,b)=>a.num-b.num).map(p=>
-    `<option value="${p.id}"${e&&e.pid===p.id?' selected':''}>دفعة ${p.num} — متبقي: ${kd(paymentLeft(p.id))}</option>`
+  mSrc = e ? (e.src||'private') : (S.payments.length ? 'payment' : 'private');
+  const sortedPays = S.payments.sort((a,b)=>a.num-b.num);
+  const defPid = e ? e.pid : (sortedPays.length ? sortedPays[sortedPays.length-1].id : null);
+  const payOpts = sortedPays.map(p=>
+    `<option value="${p.id}"${p.id===defPid?' selected':''}>دفعة ${p.num} — متبقي: ${kd(paymentLeft(p.id))}</option>`
   ).join('');
   showModal(`
   <div class="mhdr"><div class="mtitle">${e?'تعديل المصروف':'إضافة مصروف شهري'}</div><button class="mclose" onclick="closeModal()">✕</button></div>
